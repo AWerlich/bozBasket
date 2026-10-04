@@ -1,0 +1,191 @@
+# Four-day polish plan (Mon 14 — Thu 17 September)
+
+The six-day build is done: programs on devnet, keeper working, web app
+shipped, all six reason codes proven on chain. Friday 18th 16:00 ET is the
+deadline, so Friday is buffer and submission only.
+
+Judging asks one question: *could this be a real app that people will actually
+use?* Everything below is chosen against that, not against a feature list.
+
+## Progress
+
+- **Day 1 — done, then corrected.** The app reports when the keeper last ran,
+  the demo controls are live, and the programs' upgrade authority moved to a
+  cold key. The scheduled GitHub Action turned out to fire only a few times a
+  day and the Railway credit ran out, so on 2026-09-14 the keeper moved into
+  the web app itself: open pages, the demo nudge and a five-minute cron-job.org
+  job trigger passes, behind one Postgres lock that every keeper shares.
+  Verified on production over two spaced cycles.
+- **Day 2 — done, one item deferred.** `update_plan` is on devnet and editable
+  from the plan page. The guard scorecard is unit tested and live, counting one
+  blind fill per held-back buy. Deferred: the portfolio-over-time chart, which
+  Day 2's done-when did not require.
+- **Day 3 — done in code; phone checks still to do.** The landing page shows
+  the live proof (US session, and each feed's price, confidence and age from
+  Pyth) on the first screen of a phone. Tables become cards below 640 px, the
+  sliders have a thumb-sized hit area, a failed refresh no longer blanks a
+  loaded plan, and link previews have an Open Graph card.
+- **Added 2026-09-14: the mainnet check.** The weakest point was that
+  everything runs on devnet. Every keeper pass now also prices $100 of TSLAx
+  and QQQx on Jupiter against Pyth, read-only and with the issuer's share
+  multiplier, and the landing page charts the verdicts. The first weekend on
+  record starts Friday 20:00 ET, after submission; the page keeps collecting
+  through judging, which ends 2 October.
+- **Added 2026-09-14: the Guard API, and a demo that restores itself.** The
+  mainnet check is now a public endpoint any app can call for its own size and
+  limits, with an OpenAPI description and a `/developers` page. The finding
+  below is fixed: ten idle minutes after a control, the next keeper pass
+  restores the demo.
+- **Added 2026-09-15: eight weekends measured.** Real pool candles and Pyth
+  history, 2026-07-24 to 2026-09-11: a weekend buy landed a median 53 bps
+  (TSLAx) and 45 bps (QQQx) from the next Pyth price, against 13 and 15 on
+  weekdays. Waiting did not save money on average, and the landing page and
+  README say so.
+- **Found on day 3: demo controls stay on until someone presses Restore.** A
+  TSLA price override, $10 depth and a 0 bps confidence ceiling were still
+  active on devnet, which would have stopped Monday's execution. Restored.
+  During judging this will happen again: an automatic restore after a few idle
+  minutes would stop one judge breaking the demo for the next.
+- **Watch the next US market open.** The demo plan's weekend-deferred buy fills
+  then, producing the first organic stale-savings figure. That is the number
+  the video should show.
+
+## Where we honestly stand
+
+**Strong.** The guard is a real differentiator and it is enforced on chain,
+not in a client. Deferrals are auditable transactions. The atomic multi-leg
+fill is a genuine reason to be on Solana. The demo wallet removes every
+onboarding step. The README is straight about what is mocked.
+
+**Weak, in priority order.**
+
+1. **The deployed app is a dead demo.** The keeper runs on a laptop. A judge
+   who opens the Vercel URL, creates a plan and waits will see nothing
+   execute, ever. This single gap undoes the "working end-to-end demo"
+   criterion for everyone who does not watch the video.
+2. **The value is asserted, not measured.** We say deferring protects the
+   user. We never show *how much*. A number turns a feature into a product.
+3. **The thesis is invisible until you click.** The landing page explains;
+   it does not demonstrate. Right now, live, the market is closed and three
+   equity feeds are 30+ hours stale. That fact belongs on the first screen.
+4. **A plan cannot be changed.** Want $150 a week instead of $100? Create a
+   second plan. That is not how a recurring-investing product behaves.
+5. **Unknown on a phone.** Nine-column tables. Judges open links on phones.
+
+## Day 1 (Mon) — make the deployed demo alive
+
+Nothing else matters if this is not true.
+
+- Deploy `apps/keeper` as an always-on worker on Railway (the bozPicks
+  account already exists; `railpack.json` there is the template). Root
+  directory `apps/keeper`, env `KEEPER_KEYPAIR` as a file or
+  `KEEPER_SECRET_KEY`, plus `SOLANA_RPC_URL`, `PYTH_API_KEY`, `DATABASE_URL`,
+  `OFF_HOURS_POLICY=guarded`, `KEEPER_POLL_SECONDS=60`.
+  - Backup if Railway is awkward: a GitHub Actions workflow on a `*/5` cron
+    calling `pnpm --filter keeper once`. Slower and sometimes delayed, but
+    it runs in the repo the judges are already looking at, which is its own
+    kind of proof.
+- Write a heartbeat: the keeper records a `pass` row (or updates one row)
+  every loop, and the web app shows "keeper last ran 40 s ago" with a red
+  state when it is stale. A judge must be able to tell the difference between
+  "the guard deferred" and "nothing is running".
+- Put a permanent demo plan on the home page — "watch a live plan" — so the
+  app is interesting before anyone connects a wallet.
+- Test the whole flow from the public URL in a browser with no local process
+  running and no extension.
+
+**Done when:** from the Vercel URL alone, a new plan executes within two
+minutes, and the page says when the keeper last ran.
+
+## Day 2 (Tue) — make the value measurable, and the plan editable
+
+- **"What the guard saved you."** For every deferral, compute the cost it
+  avoided and store it with the ledger row:
+  - *Divergence:* leg size × divergence. Directly computable from the
+    `Deferred` event's `detail` (basis points) and the leg amount.
+  - *Stale:* compare the stale price with the price at the next successful
+    execution. That difference is what a blind Saturday fill would have paid.
+  - Show a running total on the plan page and the home page.
+  - **Label forced deferrals separately.** Most of our divergence and
+    liquidity deferrals came from demo controls; counting those as savings
+    would be a lie. Only organic deferrals feed the headline number.
+- **`update_plan`.** A program instruction letting the owner change
+  `amount_per_period`, `period_seconds` and `end_ts`. Weights stay immutable
+  on purpose: per-leg invested is derived as weight × total invested, which
+  is exact only while the split never changes. Changing a basket means a new
+  plan, and the UI should say so. Needs a redeploy (~1.7 SOL, we hold 5.3)
+  and tests.
+- Portfolio over time: invested against value, from execution history.
+
+**Done when:** the plan page answers "what has this cost me, and what did
+waiting save me" with numbers a judge can trace to a transaction, and the
+amount can be changed without creating a second plan.
+
+## Day 3 (Wed) — the first sixty seconds
+
+- **Live proof on the landing page.** A compact panel: US session state, and
+  for each of the three feeds the price, confidence and publish age, right
+  now. On a weekend it reads "closed, prices 38 hours old" — the entire pitch,
+  demonstrated before a single click.
+- **Mobile pass.** Below 640 px the guard, portfolio and history tables become
+  stacked cards. Check the builder sliders with a thumb.
+- Loading skeletons, empty states, and a clear message when the keeper is
+  down or the ledger is unreachable.
+- Open Graph image and favicon, so a pasted link looks like a product.
+- Stretch, only if the above is done: wallet-adapter support alongside the
+  burner, so someone with Phantom can use their own wallet.
+
+**Done when:** the app is convincing on a phone, cold, with no wallet.
+
+## Day 4 (Thu) — verify, document, record, submit
+
+- Re-run `scripts/scenarios.ts` against the **deployed** stack, not localhost.
+- Re-run every suite; refresh the README with the live URL, the savings
+  numbers and two screenshots.
+- Record the video from `docs/VIDEO.md`, adjusted for whatever changed.
+- **Submit on Thursday.** Friday is for the thing that goes wrong.
+
+Progress (Monday 2026-09-14):
+
+- Every suite re-run green: 9 Rust, 32 Anchor, 11 keeper, 13 web, both
+  type-checks, the web build.
+- The first organic numbers are in the README: 25 stale deferrals on Sunday,
+  all four plans filled at 20:26 ET, $1.10 to $1.20 per $100 against the stale
+  reference.
+- Found: Pyth publishes US equities outside the regular session; only Friday
+  20:00 to Sunday 20:00 ET is stale. The "136 stale hours" claim is gone from
+  the README, DEMO and VIDEO.
+- Found: production had `OFF_HOURS_POLICY=strict` (skipped rows every five
+  minutes). Removed in Vercel; after the redeploy production filled a due plan
+  at 03:37 ET, with no GitHub Action run in that window.
+- `scenarios.ts` now holds the shared keeper lock, since "nudge" starts an
+  in-app pass that would race it, and restores the deployment in `finally`.
+  Run against the deployment once the VPN exit changed (Vercel's checkpoint
+  had been challenging the old one): 6/6, config and markets restored, and no
+  other keeper wrote a ledger row for the plan during the sweep.
+- `docs/VIDEO.md` rewritten for the live site, with the weekend scorecard.
+
+## Not doing
+
+- Mainnet or Jupiter. The program is shaped for it and the README says it is
+  not built. Claiming otherwise is the fastest way to lose a judge.
+- More assets. The Pyth key is entitled to TSLA, QQQ and VOO; the feed list
+  is configuration, and the README should say the limit is the API tier, not
+  the design.
+- New program instructions beyond `update_plan`.
+- A redesign. The look is fine; the gaps are substance, not styling.
+
+## Risks
+
+| Risk | Mitigation |
+|---|---|
+| Railway deploy eats a day | GitHub Actions cron fallback, decided by Monday lunchtime |
+| `update_plan` redeploy breaks devnet state | Deploy and test the instruction before touching the live config; the existing plan accounts do not change shape |
+| Savings numbers look invented | Only organic deferrals count, each links to its transaction, and forced ones are shown separately |
+| Time runs out | The order above is the priority order. Day 1 alone materially improves the submission; day 3 alone does not |
+
+## Needs you
+
+- A Railway project (or a decision to use the Actions fallback).
+- The Vercel URL once it is live.
+- Rotating the Neon password, since the repository is now public.

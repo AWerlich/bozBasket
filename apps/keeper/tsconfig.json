@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "types": ["node"],
+    "lib": ["es2022"]
+  },
+  "include": ["src/**/*.ts", "scripts/**/*.ts", "../../idl/*.ts", "../../packages/shared/src/**/*.ts"]
+}

@@ -1,0 +1,6 @@
+next-env.d.ts
+.next/
+
+.vercel
+src/generated/
+.next-*/

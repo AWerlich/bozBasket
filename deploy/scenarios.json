@@ -1,0 +1,54 @@
+{
+  "plan": "5vV866AdEP6kR5NemndnVoopUCK4ygXCuyGUG8L78LZq",
+  "ranAt": "2026-09-14T07:45:49.669Z",
+  "results": [
+    {
+      "name": "baseline execute",
+      "expected": 0,
+      "predicted": 0,
+      "actual": 0,
+      "signature": "2NnPMYZzvm9NkqFxc7dr4ZNm3tVD8bXDVBnwee6dBTraSrCdaowUJFHhpptWQjAHtLx746GWVRo5aqyrmjQ4gBeW",
+      "ok": true
+    },
+    {
+      "name": "divergence",
+      "expected": 4,
+      "predicted": 4,
+      "actual": 4,
+      "signature": "2Xxo9jTohaFbosohf5kBYa3KALpJidGEhqtHqDD1cz8P4KDKRAhTDvMRgPwShQM4DSEqxTp8ZVtPtP1MGyBZN4ok",
+      "ok": true
+    },
+    {
+      "name": "low liquidity",
+      "expected": 5,
+      "predicted": 5,
+      "actual": 5,
+      "signature": "3L6wUm2iLrCUdhbW6yc1kprh3SiRc2osjKPLeByHet2CXSS8qDjUNboC4mgzsAtpncCP1mXLg551vKL77ViW3TGy",
+      "ok": true
+    },
+    {
+      "name": "confidence too wide",
+      "expected": 2,
+      "predicted": 2,
+      "actual": 2,
+      "signature": "2zMYKdQX2wKrtBovKsgjxQtaVWWLHwuMD9sR2bwdRdEGBwLn1BpNbxB8yrDU6noBjCGmKUPDoHp4d98jJQ16s2C7",
+      "ok": true
+    },
+    {
+      "name": "reference stale",
+      "expected": 1,
+      "predicted": 1,
+      "actual": 1,
+      "signature": "2Gq8xKwiQswLygQSL7wzZnAPoifBMUUE5cViXGeaWJapEP2CA4ksK6MXe9mCx2gHGdvrbsdkGcX4E8nZnNq1cBeD",
+      "ok": true
+    },
+    {
+      "name": "insufficient balance",
+      "expected": 6,
+      "predicted": 6,
+      "actual": 6,
+      "signature": "2aCaKfysb81BcPFytAKLWZeeH464o2j86KKtTXFUbgT5nK6MEhsqiAHSXzQi9j5HZA2A4HCzqPf5qvNPeC8QLpFr",
+      "ok": true
+    }
+  ]
+}

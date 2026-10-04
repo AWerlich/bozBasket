@@ -1,0 +1,27 @@
+[toolchain]
+anchor_version = "0.30.1"
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.devnet]
+basket_dca = "4Tv5nEbh6b6EGNhep7rpeLy7NXpiz8AkRmVi36iwxVuR"
+mock_market = "A6pvN8KEYn5EXcgsRbzZUqBNjA5hFqFn6Ks2Li7SPMxS"
+
+[programs.localnet]
+basket_dca = "4Tv5nEbh6b6EGNhep7rpeLy7NXpiz8AkRmVi36iwxVuR"
+mock_market = "A6pvN8KEYn5EXcgsRbzZUqBNjA5hFqFn6Ks2Li7SPMxS"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "Devnet"
+wallet = "C:/msys64/home/Arash/.config/solana/id.json"
+
+[workspace]
+members = ["programs/basket_dca", "programs/mock_market"]
+
+[scripts]
+test = "pnpm exec mocha -r tsx/cjs -t 1000000 tests/**/*.ts"

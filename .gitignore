@@ -1,0 +1,16 @@
+node_modules/
+.env
+.env.*
+!.env.example
+*.keypair.json
+target/
+.anchor/
+.next/
+dist/
+test-ledger/
+.DS_Store
+.turbo/
+*.tsbuildinfo
+id.json
+*.pem
+tmp-*/
