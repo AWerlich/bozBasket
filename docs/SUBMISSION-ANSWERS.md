@@ -44,3 +44,27 @@ One repository holds the whole product: the Anchor programs, the keeper, the web
 
 It moved to this account recently, so it carries a single commit; the code is unchanged and none of it belongs to another product. mock_market exists only because devnet has no xStocks to buy; it is not part of the mainnet design. deploy/ holds the devnet program ids and the measured weekend data the site reads.
 
+### 7. Project one-liner  [95 characters]
+
+Recurring baskets of tokenized US stocks on Solana that only buy when the price can be trusted.
+
+### 8. What problem are you solving, and who are you building for?  [716 characters]
+
+Tokenized stocks trade 24/7; the price you can trust them against does not. From Friday 20:00 to Sunday 20:00 ET no US equity price is published, and the last one just ages while the tokens keep trading. Recurring-buy bots fire on a timer anyway. Measured over eight weekends of real pool trades, a blind weekend buy landed a median 0.45-0.53% from the next price Pyth published, against 0.13-0.15% on weekdays, and as far as 2% away.
+
+We build for people who want to own US equities in small regular amounts without a brokerage account - the ones who pay that spread when a timer buys at 3am on a Saturday - and for any wallet or DCA tool that wants the same check before its own swap, through our public Guard API.
+
+### 9. The Solana integration in the working MVP  [1048 characters]
+
+Our own Anchor program, basket_dca, live on devnet. create_plan opens a plan and a vault owned by the plan's PDA, so only the owner's key can withdraw. execute_basket buys every leg in one atomic transaction, and before each leg it verifies the Pyth price account the Pyth Solana Receiver just wrote - its owner, its feed id, its Full verification level - then checks four numbers against limits held on chain: age (120 s), confidence (50 bps), the venue's divergence (150 bps) and depth. Any failure writes a reason code into the plan account, emits an event and returns Ok, so a refusal is a successful, auditable transaction that moves nothing.
+
+Around it: the keeper posts signed Hermes updates with @pythnetwork/pyth-solana-receiver, Jupiter's quote API is read every five minutes on mainnet to compare a real xStock price with Pyth, xStock mints are read as Token-2022 with the issuer's scaled UI multiplier, and mock_market provides fills on devnet, which has no xStocks. The same guard rules are a public API any program or wallet can call.
+
+### 8b. Shorter version of the problem answer  [486 characters]
+
+Tokenized stocks trade 24/7; the price you can trust them against does not. From Friday 20:00 to Sunday 20:00 ET none is published, and recurring-buy bots fire on a timer anyway. Over eight weekends of real pool trades, a blind weekend buy landed a median 0.45-0.53% from the next Pyth price, against 0.13-0.15% on weekdays. We build it for people buying US equities in small regular amounts without a brokerage, and for any wallet or DCA tool that wants the same check before its swap.
+
+### 9b. Shorter version of the Solana answer  [580 characters]
+
+Our own Anchor program on devnet. One transaction buys every leg of the basket, all or nothing, from a vault owned by the plan's PDA that only its owner can withdraw from. Inside that transaction the program verifies the Pyth price account the Pyth Solana Receiver wrote - owner, feed, Full verification - and checks its age, its confidence band, the venue's divergence and depth against limits held on chain. A failure writes the reason into the plan account and returns Ok, so refusals are auditable too. The keeper posts signed Hermes updates; Jupiter's quote API is read-only.
+
