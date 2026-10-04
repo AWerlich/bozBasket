@@ -1,54 +1,59 @@
 {
-  "$schema": "https://turbo.build/schema.json",
-  "globalEnv": [
-    "DATABASE_URL",
-    "SOLANA_CLUSTER",
-    "SOLANA_RPC_URL",
-    "KEEPER_PUBKEY",
-    "KEEPER_KEYPAIR",
-    "PYTH_API_KEY",
-    "PYTH_HERMES_URL",
-    "BASKET_DCA_PROGRAM_ID",
-    "NEXT_PUBLIC_SOLANA_CLUSTER",
-    "NEXT_PUBLIC_RPC_URL",
-    "NEXT_PUBLIC_BASKET_DCA_PROGRAM_ID",
-    "KEEPER_SECRET_KEY",
-    "REFERENCE_SOURCE",
-    "SKIP_STALE_OLDER_THAN_SECS",
-    "OFF_HOURS_POLICY",
-    "KEEPER_POLL_SECONDS",
-    "CU_PRICE_MICROLAMPORTS",
-    "DEPLOYMENT_FILE",
-    "DEMO_CONTROLS",
-    "FAUCET_SECRET_KEY",
-    "NEXT_PUBLIC_DEMO_PLAN",
-    "KEEPER_STALE_AFTER_SECS"
-  ],
-  "tasks": {
-    "build": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        ".next/**",
-        "!.next/cache/**",
-        "dist/**"
-      ]
-    },
-    "dev": {
-      "cache": false,
-      "persistent": true
-    },
-    "start": {
-      "cache": false,
-      "persistent": true
-    },
-    "lint": {},
-    "type-check": {
-      "dependsOn": [
-        "^build"
-      ]
-    },
-    "test": {}
-  }
+	"$schema": "https://turbo.build/schema.json",
+	"globalDependencies": [
+		"idl/**",
+		"deploy/**"
+	],
+	"globalEnv": [
+		"DATABASE_URL",
+		"SOLANA_CLUSTER",
+		"SOLANA_RPC_URL",
+		"KEEPER_PUBKEY",
+		"KEEPER_KEYPAIR",
+		"PYTH_API_KEY",
+		"PYTH_HERMES_URL",
+		"BASKET_DCA_PROGRAM_ID",
+		"NEXT_PUBLIC_SOLANA_CLUSTER",
+		"NEXT_PUBLIC_RPC_URL",
+		"NEXT_PUBLIC_BASKET_DCA_PROGRAM_ID",
+		"KEEPER_SECRET_KEY",
+		"REFERENCE_SOURCE",
+		"SKIP_STALE_OLDER_THAN_SECS",
+		"OFF_HOURS_POLICY",
+		"KEEPER_POLL_SECONDS",
+		"CU_PRICE_MICROLAMPORTS",
+		"DEPLOYMENT_FILE",
+		"DEMO_CONTROLS",
+		"FAUCET_SECRET_KEY",
+		"NEXT_PUBLIC_DEMO_PLAN",
+		"KEEPER_STALE_AFTER_SECS"
+	],
+	"tasks": {
+		"build": {
+			"dependsOn": [
+				"^build"
+			],
+			"outputs": [
+				".next/**",
+				"!.next/cache/**",
+				"dist/**",
+				"src/generated/**"
+			]
+		},
+		"dev": {
+			"cache": false,
+			"persistent": true
+		},
+		"start": {
+			"cache": false,
+			"persistent": true
+		},
+		"lint": {},
+		"type-check": {
+			"dependsOn": [
+				"^build"
+			]
+		},
+		"test": {}
+	}
 }
